@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Bubble Rush</title>
+    <link rel='shortcut icon' type='image/x-icon' href='img/splash1.png' />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="description" content="number and brain game" />
+    
+    
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/bubbles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="gamecontainer">
+         <div id = "scorebar">
+             <span class="score" id="current-score">
+                 12345
+             </span>
+             <a href="#" id="pause-link" title="Pause Game">
+                <img src="img/pause.png" width="25" height="25" />
+             </a>
+   
+         </div>
+        <div id = "bubble-active-area">
+           <!--
+            <div id="number-area-left">
+               2000
+            </div>
+            <div id="number-area-right">
+                3000
+            </div>
+           -->
+            <table id="bubble-table" >
+                
+            </table>
+           
+        </div>
+        
+    </div>
+   
+    
+    
+    
+    <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="js/bubbles.js"></script>
+     <script type="text/javascript" src="js/models.js"></script>
+    <script type="text/javascript">
+        (function init(){
+          var model = new ModelOne();
+          var bubbleGame = new BubbleGame(model);
+          window.game= bubbleGame;
+          var height = game.getDim()[1];
+          var bubbleAreaHeight = (height*2/3) + game.bubbleMargin*game.bubbleNumber + "px";
+          $("#bubble-active-area").css("height",bubbleAreaHeight);
+          game.init();
+          //game.addBubble("4+5");
+          //game.addBubble("4+5");
+          //game.addBubble("4+5");
+          //game.addBubble("4+5");
+        })();
+    </script>
+</body>
+</html>
