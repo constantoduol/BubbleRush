@@ -14,6 +14,27 @@
     
     <link href="css/bootstrap.min.css" rel="stylesheet" />
     <link href="css/bubbles.css" rel="stylesheet" />
+    <link href="css/jquery.ui.core.css" rel="stylesheet" />
+    <link href="css/jquery.ui.progressbar.css" rel="stylesheet" />
+    <link href="css/jquery.ui.theme.css" rel="stylesheet" />
+    <style>
+        .ui-progressbar {
+           height : 6px; 
+           border-color : #51CBEE;
+        }
+        
+        .ui-progressbar  .ui-progressbar-value {
+           margin : 0px; 
+        }
+        
+        .ui-widget-header {
+           background :  #51CBEE;
+           border : 0px;
+           color : transparent;
+        }
+        
+      
+    </style>
 </head>
 <body>
     <div id="gamecontainer">
@@ -26,27 +47,29 @@
              </a>
    
          </div>
-        <div id = "bubble-active-area">
-           <!--
-            <div id="number-area-left">
+        <div id="progressbar"></div>
+         <div id="number-area-left">
                2000
             </div>
             <div id="number-area-right">
                 3000
             </div>
-           -->
+        <div id = "bubble-active-area">
+       
             <table id="bubble-table" >
                 
             </table>
            
         </div>
-        
     </div>
    
     
     
     
     <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="js/jquery.ui.core.js"></script>
+    <script type="text/javascript" src="js/jquery.ui.widget.js"></script>
+    <script type="text/javascript" src="js/jquery.ui.progressbar.js"></script>
     <script type="text/javascript" src="js/bubbles.js"></script>
      <script type="text/javascript" src="js/models.js"></script>
     <script type="text/javascript">
@@ -55,14 +78,18 @@
           var bubbleGame = new BubbleGame(model);
           window.game= bubbleGame;
           var height = game.getDim()[1];
-          var bubbleAreaHeight = (height*2/3) + game.bubbleMargin*game.bubbleNumber + "px";
+          var width = game.getDim()[0] - 60;
+          var bubbleAreaHeight = (height*3/5) + game.bubbleMargin*game.bubbleNumber + "px";
           $("#bubble-active-area").css("height",bubbleAreaHeight);
+          $("#number-area-right").css("margin-left",width+"px");
           game.init();
-          //game.addBubble("4+5");
-          //game.addBubble("4+5");
-          //game.addBubble("4+5");
-          //game.addBubble("4+5");
         })();
+        
+           $(function() {
+              $("#progressbar").progressbar({
+                  value: 100
+              });
+            });
     </script>
 </body>
 </html>

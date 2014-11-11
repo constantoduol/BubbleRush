@@ -1,5 +1,6 @@
 function BubbleGame(model){
-   this.bubbleArea = $("#bubble-table");
+   this.bubbleArea =  $("#bubble-table");
+   this.progressBar = $("#progressbar");
    this.bubbleNumber = 4; //number of bubbles across the screen
    var width = this.getDim()[0];
    var height = this.getDim()[1];
@@ -10,7 +11,7 @@ function BubbleGame(model){
    var gameWidth = width > height ? height : width;
    this.bubbleMargin = 5; // 5px
    this.bubbleDiameter = parseInt( ((gameWidth*factor) / (this.bubbleNumber + 0.5)) - this.bubbleMargin); //diameter in pixels
-   this.bubbleAreaSpacing = (width - (this.bubbleDiameter * this.bubbleNumber))/(this.bubbleNumber+1);
+   this.bubbleAreaSpacing = (width - (this.bubbleDiameter * this.bubbleNumber))/(this.bubbleNumber + 1.6);
    this.bubbleDensity = this.bubbleNumber*3; //this is the number of bubbles in the bubble area
    this.bubbleVerticalVelocity = model.bubbleVerticalVelocity; //this is in pixels/second
    this.bubbleHorizontalVelocity = model.bubbleHorizontalVelocity;
@@ -19,8 +20,9 @@ function BubbleGame(model){
    this.numberOne = 0;
    this.numberTwo = 10;
    this.animationDelay = model.animationDelay; //in milliseconds
-   this.moveFactor = 1; //this is the movement factor upwards
-   this.processAnimation = true;
+   this.moveFactor = 0; 
+   this.progressAnimationDelay = 100;
+   this.timeoutData = {};
    this.gameModel = model;
    this.bubbleArea.css("border-spacing",this.bubbleAreaSpacing+"px");
    this.bubbleArea.css("border-collapse","separate");
@@ -51,18 +53,60 @@ BubbleGame.prototype.getDim = function(){
 };
 
 BubbleGame.prototype.init = function(){
+    game.clearAllTimers();
+    game.moveFactor = 0;
     this.gameModel.initAllBubbles();
-    this.runLater(game.animationDelay,this.animate);
-    this.runLater(this.gameModel.gameDelay*0.95,this.disappear);
-    this.runLater(this.gameModel.gameDelay,this.gameModel.initAllBubbles);
+    var progressTimer = this.runLater(this.progressAnimationDelay,this.animateProgress);
+    game.timeoutData.progress_timer = progressTimer;
+
 };
 
+BubbleGame.prototype.animateProgress = function(){
+     game.progressBar.progressbar({
+         value : (100 -  game.moveFactor)
+      });
+     var progressTimer = game.runLater(game.progressAnimationDelay,game.animateProgress);
+     game.timeoutData.progress_timer = progressTimer;
+     game.moveFactor++;
+     game.moveFactor = game.moveFactor === 100 ? 0 : game.moveFactor;
+     if(game.moveFactor > 70){
+       game.progressBar.css("border-color","red");
+       game.progressBar.children().css("border-color","red");
+       game.progressBar.children().css("background","red");
+      
+     }
+     else {
+       game.progressBar.css("border-color","#51CBEE");
+       game.progressBar.children().css("border-color","#51CBEE");
+       game.progressBar.children().css("background","#51CBEE");  
+     }
+};
 
 BubbleGame.prototype.disappear = function(){
   for(var x = 0; x < game.bubbleIds.length; x++){
      var id = game.bubbleIds[x];
-     $("#"+id).addClass("old-bubble");
+     var bubble =  $("#"+id);
+     bubble.addClass("old-bubble");
+     game.runLater(100,function(){
+       bubble.removeClass("old-bubble"); 
+    });
   }
+};
+
+BubbleGame.prototype.clickBubble = function(bubbleId){
+   var bubble = $("#"+bubbleId);
+   bubble.addClass("explode");
+   //remove the bubble as an active bubble
+   var index = game.bubbleIds.indexOf(bubbleId);
+   game.bubbleIds.splice(index);
+   game.activeBubbles.splice(index);
+   game.runLater(1000,function(){
+      //bubble.remove(); 
+      game.disappear();
+      game.init();
+   });
+   
+   
 };
 
 BubbleGame.prototype.addInitBubble = function (newBubble,row,col){
@@ -81,19 +125,22 @@ BubbleGame.prototype.addInitBubble = function (newBubble,row,col){
     var str = newBubble.firstNum + newBubble.sign + newBubble.secondNum + "";
     var td_id = "td_"+row+"_"+col;
     var currentItem = $("<td id="+td_id+" style='padding-bottom : 15px;'>");
-    var bubbleDiv = $("<div class='circle' style='width : "+width+";height : \n\
+     var bubbleDivId = "bubble_"+row+"_"+col;
+    var bubbleDiv = $("<div onclick='game.clickBubble(\""+bubbleDivId+"\")' class='circle' style='width : "+width+";height : \n\
                       "+width+";line-height:"+width+";border-radius:"+radius+";\n\
                       font-size:"+fontSize+";'>"+str+"</div>");
     currentItem.append(bubbleDiv);
-    var bubbleDivId = "bubble_"+row+"_"+col;
     bubbleDiv.attr("id",bubbleDivId);
     bubbleDiv.addClass("new-bubble");
+    game.runLater(100,function(){
+       bubbleDiv.removeClass("new-bubble"); 
+    });
     newBubble.id = bubbleDivId; 
     currentRow.append(currentItem); 
     this.activeBubbles.push(newBubble);
     this.bubbleIds.push(newBubble.id);
 };
-
+/*
 //here we add a bubble to replace one that has already gone beyond the view scope
 BubbleGame.prototype.addSubsequentBubbles = function(bubbles){
     var row = game.moveFactor + 1;
@@ -123,12 +170,15 @@ BubbleGame.prototype.addSubsequentBubbles = function(bubbles){
     this.bubbleArea.append(newRow);
     
 };
+*/
 
+/*
 BubbleGame.prototype.animate = function(){
   //the strategy is to destroy bubbles once they cross the bubbleAreaTop
   //and recreate them at the bottom of the bubble area 
  
   function runAnimation(){
+     
       for(var x = 0; x < game.activeBubbles.length; x++){
           var bubbleDiv = $("#"+game.activeBubbles[x].id);
           var left = Math.floor(Math.random()*game.bubbleHorizontalVelocity)+"px";
@@ -136,34 +186,32 @@ BubbleGame.prototype.animate = function(){
           bubbleDiv.css("left",left);   
           var top = Math.floor(Math.random()*game.bubbleVerticalVelocity)+"px";
           bubbleDiv.css("top",top);
+        }
         
-       }
          game.moveFactor++;
-         //generate new bubbles here
-        // var bubbles = game.gameModel.generateNewBubbles();
-       
-         //game.addSubsequentBubbles(bubbles);
-         //depending on the game move factor, we destroy higher bubbles and remove them from the refresh cycle
-      
-     
-        
-    
-    game.runLater(game.animationDelay,game.animate); 
-  }
-  
- 
-  
-  if(window.requestAnimationFrame){
-     window.requestAnimationFrame(function(){
-        runAnimation();
-     }); 
-  }
-  else {
-     runAnimation(); 
-  }
-
+        // game.runLater(game.gameModel.gameDelay,game.animateProgress);
+         game.runLater(game.animationDelay,game.animate); 
+      }
+      if(window.requestAnimationFrame){
+          window.requestAnimationFrame(function(){
+              //runAnimation();
+              game.animateProgress();
+          }); 
+      }
+      else {
+          //runAnimation(); 
+          game.animateProgress();
+      }
 };
-
+*/
 BubbleGame.prototype.runLater = function (limit, func) {
     return setTimeout(func, limit);
+};
+
+BubbleGame.prototype.clearAllTimers = function(){
+   for(var timer in game.timeoutData){
+       var timeout = game.timeoutData[timer];
+       clearTimeout(timeout);
+   } 
+   game.timeoutData = {};
 };

@@ -26,6 +26,8 @@ function ModelOne(){
 
 
 ModelOne.prototype.initAllBubbles = function(){
+  game.bubbleIds = [];
+  game.activeBubbles = [];
   game.bubbleArea.html("");
   var smodel = new Model();
   var diff = game.numberTwo - game.numberOne;
@@ -36,8 +38,11 @@ ModelOne.prototype.initAllBubbles = function(){
       var data = smodel.getRowAndCol(x);
       game.addInitBubble(bubble,data[0],data[1]);
     }
-   game.runLater(game.gameModel.gameDelay*0.95,game.disappear);
-   game.runLater(game.gameModel.gameDelay,game.gameModel.initAllBubbles);
+  
+   var disappearTimer = game.runLater(game.gameModel.gameDelay*0.95,game.disappear);
+   var initBubbleTimer = game.runLater(game.gameModel.gameDelay,game.gameModel.initAllBubbles);
+   game.timeoutData.disappear_timer = disappearTimer;
+   game.timeoutData.init_bubble_timer = initBubbleTimer;
 };
 
 ModelOne.prototype.generateNewBubbles = function(){
